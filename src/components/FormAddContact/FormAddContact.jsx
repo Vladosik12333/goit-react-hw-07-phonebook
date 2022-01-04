@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Form, Container, Button } from './FormAddContact.styled';
 import { useAddContactMutation, useGetContactsQuery } from 'redux/contacts';
 
@@ -6,11 +6,17 @@ export default function FormAddContact() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [addContact, { isLoading, isError, error }] = useAddContactMutation();
+  const [actualData, setActualData] = useState([]);
+  const isFirst = useRef(true);
+
   const {
     data,
     isError: isErrorQuery,
     error: errorQuery,
-  } = useGetContactsQuery(name, { skip: !name });
+  } = useGetContactsQuery(name, { skip: !isFirst.current });
+
+  if (data ?? false) isFirst.current = false;
+
   const handleContactInput = ({ currentTarget }) => {
     const { value, name } = currentTarget;
 
@@ -28,17 +34,23 @@ export default function FormAddContact() {
 
   const onSubmit = evt => {
     evt.preventDefault();
+    setActualData([...data]);
 
     if (isErrorQuery) return reset();
 
     if (
-      data.find(contact => contact.name.toLowerCase() === name.toLowerCase())
+      actualData.length === 0
+        ? data
+        : actualData.find(
+            contact => contact.name.toLowerCase() === name.toLowerCase(),
+          )
     ) {
       alert(`${name} is already in contacts.`);
       reset();
       return;
     }
 
+    setActualData(prevData => [...prevData, { name }]);
     addContact({ name, phone });
     reset();
   };

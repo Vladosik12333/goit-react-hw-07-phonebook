@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { selectors } from 'redux/contacts';
 
 export default function Contacts() {
-  const filter = useSelector(state => selectors.getFilter(state));
+  const filter = useSelector(selectors.getFilter);
 
   const { data, error, isFetching } = useGetContactsQuery();
 
